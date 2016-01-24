@@ -11,8 +11,9 @@ var redis = new Redis();
 
 exports.handle_get_sensor_status = function(req, res)
 {
-   var maxInterval = 5*60*1000; // 5 min.
+   var MAX_INTERVAL = 5*60*1000; // 5 min.
    
+   // build the key from parameter   
    var key = "sn" + req.params.id;
 
    console.log("Request: received key = " + key);
@@ -20,23 +21,27 @@ exports.handle_get_sensor_status = function(req, res)
    // legge da Redis
    // This is the way get from redis has to work
    //
-   redis.get(key, function (err, result) {
+   redis.get(key, function (err, result) 
+   {
 
     res.contentType('application/json');
 
     if (err)
     {
-       res.send({'error':'An error has occurred - ' + err});
+       res.send({'error':'Error occurred - ' + err});
     }
     else
     {
-       // costruisce l'output
+       // build l'output
+       // first calcultate time since last reding from sensor snx
        var now = new Date().getTime();
+       
+       // reading from redis is in millisec.
        var diff = (now - result);
        
        var outcome = "";
 
-       if (diff > maxInterval)
+       if (diff > MAX_INTERVAL)
        {
           // too much time passed since last reading received
           outcome = "DOWN";
